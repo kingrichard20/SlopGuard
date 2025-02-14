@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SlopGuard
 // @namespace    https://www.github.com/KingRichard20
-// @version      1.1.0
+// @version      1.1.1
 // @description  Hide YouTube Shorts recommendations and save time.
 // @author       KingRichard20
 // @match        https://www.youtube.com
@@ -110,5 +110,14 @@
 
   // Start observer
   observer.observe(document, { childList: true, subtree: true });
+
+  // There are cases where the Shorts panel may still show in search results (causes are unknown)
+  // Let's use this as a temporary fix
+  window.addEventListener("yt-page-data-updated", () => {
+    if (location.pathname.startsWith("/shorts")) {
+      infoLog("Somehow arrived at Shorts, going back");
+      history.back();
+    }
+  });
 
 })();
