@@ -12,11 +12,6 @@
 // @grant        none
 // ==/UserScript==
 
-// Information:
-
-// -- Elements --
-// Home page shorts panel tag name: ytd-rich-section-renderer
-// Watch page shorts panel tag name: ytd-reel-shelf-renderer
 
 
 (function () {
