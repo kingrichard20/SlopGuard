@@ -7,8 +7,12 @@
 // @match        https://www.youtube.com
 // @match        https://www.youtube.com/shorts/*
 // @match        https://www.youtube.com/watch*
+// @match        https://www.youtube.com/results*
 // @run-at       document-start
 // @icon         https://upload.wikimedia.org/wikipedia/commons/f/fc/Youtube_shorts_icon.svg
+// @version      1.0.0
+// @downloadURL  https://raw.githubusercontent.com/kingrichard20/SlopGuard/refs/heads/main/slopguard.js
+// @updateURL    https://raw.githubusercontent.com/kingrichard20/SlopGuard/refs/heads/main/slopguard.js
 // @grant        none
 // ==/UserScript==
 
@@ -17,12 +21,11 @@
 (function () {
   'use strict';
 
-  // Elements to remove
+  // Elements to target orremove
   const ShortsIconQueryHome = "yt-icon.style-scope.ytd-rich-shelf-renderer:not([hidden])";
   const ShortsIconQueryWatch = "yt-icon#icon.style-scope.ytd-reel-shelf-renderer:not([hidden])";
-
-  const ShortsTagHomePage = "YTD-RICH-SHELF-RENDERER";
-  const ShortsTagWatchPage = "YTD-REEL-SHELF-RENDERER";
+  const ShortsParentHomePage = "YTD-RICH-SHELF-RENDERER";
+  const ShortsParentWatchPage = "YTD-REEL-SHELF-RENDERER";
 
   // Logging
   function infoLog(...args) {
@@ -44,10 +47,24 @@
     return findParentElementByTag(elem.parentElement, tagName);
   }
 
-  // If we directly visit a Shorts url, navigate to the home page.
-  if (location.pathname.startsWith("/shorts")) {
-    infoLog("Direct visit to Shorts, redirecting...");
-    location.replace("/");
+  // Element clearing
+  /**
+   * 
+   * @param {string} iconQuery 
+   * @param {string} parentQuery 
+   * @param {string} logName 
+   */
+  function clearElements(iconQuery, parentQuery, logName) {
+    // Get elements
+    for (const elem of document.querySelectorAll(iconQuery)) {
+
+      // Log
+      infoLog(`${logName} page -`, "Shorts panel found, removing...");
+
+      // Get parent and remove it
+      const desiredParent = findParentElementByTag(elem, parentQuery);
+      desiredParent.remove();
+    }
   }
 
 
@@ -55,31 +72,35 @@
   // Create observer
   const observer = new MutationObserver(function (_mutations, _obs) {
 
-    const isWatching = location.pathname.startsWith("/watch");
-    const isHome = location.pathname === "/";
+    switch (location.pathname) {
 
-    // No need to continue
-    if (!isHome && !isWatching) {
-      return;
-    }
+      // Home
+      case "/":
+        clearElements(ShortsIconQueryHome, ShortsParentHomePage, "Home");
+        break;
 
-    const pageIconQuery = isWatching ? ShortsIconQueryWatch : ShortsIconQueryHome;
-    const pageParentQuery = isWatching ? ShortsTagWatchPage : ShortsTagHomePage;
-    const dbgPageName = isWatching ? "Watch" : "Home";
+      // Watch
+      case "/watch":
+        clearElements(ShortsIconQueryWatch, ShortsParentWatchPage, "Watch");
+        break;
 
-    // Get elements
-    for (const elem of document.querySelectorAll(pageIconQuery)) {
+      // Search results
+      case "/results":
+        clearElements(ShortsIconQueryWatch, ShortsParentWatchPage, "Search");
+        break;
 
-      // Log
-      infoLog(`${dbgPageName} page -`, "Shorts panel found, removing...");
-
-      // Get parent and remove it
-      const desiredParent = findParentElementByTag(elem, pageParentQuery);
-      desiredParent.remove();
+      default:
+        break;
     }
 
   });
 
+
+  // If we directly visit a Shorts url, navigate to the home page.
+  if (location.pathname.startsWith("/shorts")) {
+    infoLog("Direct visit to Shorts, redirecting...");
+    location.replace("/");
+  }
 
   // Start observer
   observer.observe(document, { childList: true, subtree: true });
