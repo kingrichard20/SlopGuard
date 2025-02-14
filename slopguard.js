@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SlopGuard
 // @namespace    https://www.github.com/KingRichard20
-// @version      1.0.0
+// @version      1.1.0
 // @description  Hide YouTube Shorts recommendations and save time.
 // @author       KingRichard20
 // @match        https://www.youtube.com
@@ -16,7 +16,7 @@
 // ==/UserScript==
 
 
-
+// Could we just replace this with CSS that hides the panels?
 (function () {
   'use strict';
 
@@ -80,7 +80,13 @@
 
       // Watch
       case "/watch":
-        clearElements(ShortsIconQueryWatch, ShortsParentWatchPage, "Watch");
+        // clearElements(ShortsIconQueryWatch, ShortsParentWatchPage, "Watch");
+
+        // Removes both "Shorts" and "Shorts remixing this video" panels
+        for (const elem of document.getElementsByTagName(ShortsParentWatchPage)) {
+          infoLog(`Watch page -`, "Shorts panel found, removing...");
+          elem.remove();
+        }
         break;
 
       // Search results
