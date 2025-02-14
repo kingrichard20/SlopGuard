@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SlopGuard
 // @namespace    https://www.github.com/KingRichard20
-// @version      2025-02-13
+// @version      1.0.0
 // @description  Hide YouTube Shorts recommendations and save time.
 // @author       KingRichard20
 // @match        https://www.youtube.com
@@ -10,7 +10,6 @@
 // @match        https://www.youtube.com/results*
 // @run-at       document-start
 // @icon         https://upload.wikimedia.org/wikipedia/commons/f/fc/Youtube_shorts_icon.svg
-// @version      1.0.0
 // @downloadURL  https://raw.githubusercontent.com/kingrichard20/SlopGuard/refs/heads/main/slopguard.js
 // @updateURL    https://raw.githubusercontent.com/kingrichard20/SlopGuard/refs/heads/main/slopguard.js
 // @grant        none
@@ -34,7 +33,7 @@
 
   // Element traversal
   /**
-   * 
+   *
    * @param {HTMLElement} elem The target element
    * @param {string} tagName Upper-case
    */
@@ -49,10 +48,10 @@
 
   // Element clearing
   /**
-   * 
-   * @param {string} iconQuery 
-   * @param {string} parentQuery 
-   * @param {string} logName 
+   *
+   * @param {string} iconQuery
+   * @param {string} parentQuery
+   * @param {string} logName
    */
   function clearElements(iconQuery, parentQuery, logName) {
     // Get elements
@@ -94,6 +93,7 @@
     }
 
   });
+
 
 
   // If we directly visit a Shorts url, navigate to the home page.
