@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SlopGuard
 // @namespace    https://www.github.com/KingRichard20
-// @version      1.1.1
+// @version      1.2.0
 // @description  Hide YouTube Shorts recommendations and save time.
 // @author       KingRichard20
 // @match        https://www.youtube.com
@@ -20,22 +20,28 @@
 (function () {
   'use strict';
 
-  // Elements to target orremove
+  /* Elements to target or remove */
+
+  // Shorts can show up in search results
+  const ShortsResultQuery = "div.badge-shape-wiz__text";
+  const ShortsResultTag = "YTD-VIDEO-RENDERER";
+
   const ShortsIconQueryHome = "yt-icon.style-scope.ytd-rich-shelf-renderer:not([hidden])";
   const ShortsIconQueryWatch = "yt-icon#icon.style-scope.ytd-reel-shelf-renderer:not([hidden])";
-  const ShortsParentHomePage = "YTD-RICH-SHELF-RENDERER";
-  const ShortsParentWatchPage = "YTD-REEL-SHELF-RENDERER";
+
+  const ShortsParentTagHome = "YTD-RICH-SHELF-RENDERER";
+  const ShortsParentTagWatch = "YTD-REEL-SHELF-RENDERER";
 
   // Logging
   function infoLog(...args) {
     console.log("[SlopGuard]", ...args);
   }
 
-  // Element traversal
+  // Document traversal
   /**
    *
    * @param {HTMLElement} elem The target element
-   * @param {string} tagName Upper-case
+   * @param {string} tagName Upper-case parent tag name
    */
   function findParentElementByTag(elem, tagName) {
 
@@ -49,22 +55,53 @@
   // Element clearing
   /**
    *
-   * @param {string} iconQuery
-   * @param {string} parentQuery
+   * @param {string} hallmarkQuery
+   * @param {string} parentTag
+   * @param {(e: Element) => boolean} elemCheck
    * @param {string} logName
    */
-  function clearElements(iconQuery, parentQuery, logName) {
+  function clearElementsCheck(hallmarkQuery, parentTag, elemCheck, logName) {
+
     // Get elements
-    for (const elem of document.querySelectorAll(iconQuery)) {
+    for (const elem of document.querySelectorAll(hallmarkQuery)) {
+
+      if (!elemCheck(elem)) {
+        continue;
+      }
 
       // Log
-      infoLog(`${logName} page -`, "Shorts panel found, removing...");
+      infoLog(`${logName} page -`, "Shorts found, removing...");
 
       // Get parent and remove it
-      const desiredParent = findParentElementByTag(elem, parentQuery);
-      desiredParent.remove();
+      const parentElem = findParentElementByTag(elem, parentTag);
+
+      parentElem.remove();
     }
   }
+  /**
+   *
+   * @param {string} hallmarkQuery
+   * @param {string} parentTag
+   * @param {string} logName
+   */
+  function clearElements(hallmarkQuery, parentTag, logName) {
+    // Get elements
+    for (const elem of document.querySelectorAll(hallmarkQuery)) {
+
+      // Log
+      infoLog(`${logName} page -`, "Shorts found, removing...");
+
+      // Get parent and remove it
+      const parentElem = findParentElementByTag(elem, parentTag);
+
+      if (parentElem === null) {
+        continue;
+      }
+
+      parentElem.remove();
+    }
+  }
+
 
 
 
@@ -75,23 +112,25 @@
 
       // Home
       case "/":
-        clearElements(ShortsIconQueryHome, ShortsParentHomePage, "Home");
+        clearElements(ShortsIconQueryHome, ShortsParentTagHome, "Home");
         break;
 
       // Watch
       case "/watch":
-        // clearElements(ShortsIconQueryWatch, ShortsParentWatchPage, "Watch");
 
         // Removes both "Shorts" and "Shorts remixing this video" panels
-        for (const elem of document.getElementsByTagName(ShortsParentWatchPage)) {
-          infoLog(`Watch page -`, "Shorts panel found, removing...");
+        for (const elem of document.getElementsByTagName(ShortsParentTagWatch)) {
+          infoLog(`Watch page -`, "Shorts found, removing...");
           elem.remove();
         }
         break;
 
       // Search results
       case "/results":
-        clearElements(ShortsIconQueryWatch, ShortsParentWatchPage, "Search");
+        clearElements(ShortsIconQueryWatch, ShortsParentTagWatch, "Search");
+
+        // Removes Shorts found in search results
+        clearElementsCheck(ShortsResultQuery, ShortsResultTag, (el => el !== null && el.textContent === "SHORTS"), "Search");
         break;
 
       default:
@@ -115,7 +154,7 @@
   // Let's use this as a temporary fix
   window.addEventListener("yt-page-data-updated", () => {
     if (location.pathname.startsWith("/shorts")) {
-      infoLog("Somehow arrived at Shorts, going back");
+      infoLog("Somehow arrived at Shorts, going back...");
       history.back();
     }
   });
